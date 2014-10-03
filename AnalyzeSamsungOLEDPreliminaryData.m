@@ -12,6 +12,7 @@ function AnalyzePreliminarySamsungOLEDdata
     % Data file where all data structs are appended
     calibrationFileName = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/OOCalibrationToolbox/SamsungOLED_calib.mat';
     calibrationFileName = './PreliminaryData/SamsungOLED_calib.mat';
+    
     % create a MAT-file object that supports partial loading and saving.
     matOBJ = matfile(calibrationFileName, 'Writable', false);
     
