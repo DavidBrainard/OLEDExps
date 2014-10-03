@@ -10,8 +10,13 @@ function AnalyzePreliminarySamsungOLEDdata
     
     
     % Data file where all data structs are appended
-    calibrationFileName = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/OOCalibrationToolbox/SamsungOLED_calib.mat';
+    % calibrationFileName = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/OOCalibrationToolbox/SamsungOLED_calib.mat';
+    
+    %  Single target runs expect for last 2
     calibrationFileName = './PreliminaryData/SamsungOLED_calib.mat';
+    
+    % Double target runs
+    calibrationFileName = './PreliminaryData/SamsungOLED_DoubleTargetCalib1.mat';
     
     % create a MAT-file object that supports partial loading and saving.
     matOBJ = matfile(calibrationFileName, 'Writable', false);
@@ -64,13 +69,13 @@ function AnalyzePreliminarySamsungOLEDdata
     
     fprintf('\n%-30s: %d pixels', 'Stabilizer border width', runParams.stabilizerBorderWidth);
    
-    fprintf('\n%-30s: ', 'Stabilizer gray levels');
+    fprintf('\n%-30s: ', 'Stabilizer gray level(s)');
     fprintf('%2.2f ', runParams.stabilizerGrays);
     
-    fprintf('\n%-30s: ', 'Scene gray levels');
+    fprintf('\n%-30s: ', 'Scene mean gray level(s)');
     fprintf('%2.2f ', runParams.sceneGrays);
     
-    fprintf('\n%-30s: ', 'Bias gray levels');
+    fprintf('\n%-30s: ', 'Bias gray level(s)');
     fprintf('%2.2f ', runParams.biasGrays);
     
     fprintf('\n%-30s: ', 'Bias region sizes (x)');
@@ -85,12 +90,11 @@ function AnalyzePreliminarySamsungOLEDdata
     fprintf('\n%-30s: ', 'Gamma input values (right)');
     fprintf('%2.3f ', runParams.rightTargetGrays);
     
-    fprintf('\n%-30s: (%dx%d)', 'Left Target position', runParams.leftTarget.x0, runParams.leftTarget.y0);
-    fprintf('\n%-30s: (%dx%d)', 'Left Target size', runParams.leftTarget.width, runParams.leftTarget.height);
+    fprintf('\n%-30s: (%d,%d)', 'Target position (left)', runParams.leftTarget.x0, runParams.leftTarget.y0);
+    fprintf('\n%-30s: (%d,%d)', 'Target position (right)', runParams.rightTarget.x0, runParams.rightTarget.y0);
     
-    
-    fprintf('\n%-30s: (%dx%d)', 'Right Target position', runParams.rightTarget.x0, runParams.rightTarget.y0);
-    fprintf('\n%-30s: (%dx%d)', 'Right Target size', runParams.rightTarget.width, runParams.rightTarget.height);
+    fprintf('\n%-30s: %dx%d', 'Target size (left)', runParams.leftTarget.width, runParams.leftTarget.height);
+    fprintf('\n%-30s: %dx%d', 'Target size (right)', runParams.rightTarget.width, runParams.rightTarget.height);
     
     
     fprintf('\n\n');
