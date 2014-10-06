@@ -12,7 +12,7 @@ function OLDAnalyzePreliminarySamsungOLEDdata
     % Data file where all data structs are appended
     % calibrationFileName = '/Users/Shared/Matlab/Toolboxes/BrainardLabToolbox/OOCalibrationToolbox/SamsungOLED_calib.mat';
     
-    %  Single target runs expect for last 2
+    %  Single target runs expect for last 2 runs
     calibrationFileName = './PreliminaryData/SamsungOLED_calib.mat';
     
     % Double target runs
