@@ -312,7 +312,7 @@ function AnalyzePreliminarySamsungOLEDdata
             
             condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
             lineColor = lineColors(condIndex,:);  
-            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), repmat(squeeze(curveRatiosLeft(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), '-', 'LineWidth', 4, 'Color', lineColor);  
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), repmat(squeeze(curveRatiosLeft(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), '-', 'LineWidth', 4, 'Color', lineColor);  
             
             if (~isempty(rightGammaOut))
                 curveRatiosRight(stabilizerGrayIndex, biasSizeIndex) = 1.0/(gammaCurveRight(indices) \ referenceGammaCurveRight(indices));
@@ -345,7 +345,7 @@ function AnalyzePreliminarySamsungOLEDdata
     print(gcf, '-dpdf', '-r600', 'Fig2.pdf');
     
 
-    stabilizerGrayIndex = 1;
+    stabilizerGrayIndex = 2;
     biasSizeIndex = 3;
             
     condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
@@ -359,51 +359,55 @@ function AnalyzePreliminarySamsungOLEDdata
     
     h3 = figure(3);
     clf;
-    subplot(1,3,1);
+    
+    subplot('Position', [0.07 0.68 0.91 0.3]);
     energy = squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices));
     dE = max(energy(:))*0.01;
-    energyLims = [min(energy(:))-dE max(energy(:))+dE];
+    energyLims = [0.493 0.498];
+    energyTicks = energyLims(1):0.001:energyLims(2);
     
     plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  ratiosLeft(indices), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
-    xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    xlabel('');
     ylabel('Gamma Ratio (measured/reference)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-    set(gca, 'XLim', energyLims, 'YLim', [0.35 1.05], 'YTick', [0.0:0.1:1.1]);
+    set(gca, 'XLim', energyLims, 'YLim', [0.35 1.05], 'YTick', [0.0:0.1:1.1], 'XTick', energyTicks);
     set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
-    axis 'square'
+    legend_handle = legend({'ratio'}, 'Location', 'SouthEast');
+    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 12);
     grid on;
     box on
     
     
-    subplot(1,3,2);
+    subplot('Position', [0.07 0.356 0.91 0.3]);
     hold on
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  gammaCurveLeft/max(gammaCurveLeft), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  referenceGammaCurveLeft/max(referenceGammaCurveLeft), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  gammaCurveLeft(indices)/max(gammaCurveLeft(indices)), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  referenceGammaCurveLeft(indices)/max(referenceGammaCurveLeft(indices)), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
     hold off
-    xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    xlabel('');
     ylabel('Normalized luminance', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-    set(gca, 'XLim', energyLims, 'YLim', [-0.05 1.05], 'YTick', [0.0:0.1:1.1]);
+    set(gca, 'XLim', energyLims, 'YLim', [-0.05 1.05], 'YTick', [0.0:0.1:1.1], 'XTick', energyTicks);
     set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
-    axis 'square'
-    legend_handle = legend({'gamma curve', 'reference gamma curve'}, 'Location', 'NorthWest');
-    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
+    
+    legend_handle = legend({'Measured (Bias region:420x420, Stabilizer gray: 0.33)', 'Reference(Bias region: none, Stabilizer gray: 0.0)'}, 'Location', 'SouthEast');
+    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 12);
     grid on;
     box on
     
     
     
-    subplot(1,3,3);
+    subplot('Position', [0.07 0.03 0.91 0.3]);
     hold on
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  gammaCurveLeft/max(gammaCurveLeft), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  referenceGammaCurveLeft/max(referenceGammaCurveLeft), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  gammaCurveLeft(indices)/max(gammaCurveLeft(indices)), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  referenceGammaCurveLeft(indices)/max(referenceGammaCurveLeft(indices)), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
     hold off
     set(gca, 'YScale', 'log', 'XScale', 'log');
     xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     ylabel('Normalized luminance', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-    set(gca, 'XLim', energyLims, 'YLim', [-0.05 1.05], 'YTick', [0.003 0.01 0.03 0.1 0.3 1.0]);
+    set(gca, 'XLim', energyLims, 'YLim', [-0.05 1.05], 'YTick', [0.003 0.01 0.03 0.1 0.3 1.0], 'XTick', energyTicks);
     set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
-    axis 'square'
-    legend_handle = legend({'gamma curve', 'reference gamma curve'}, 'Location', 'NorthWest');
-    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
+    
+    legend_handle = legend({'Measured (Bias region:420x420, Stabilizer gray: 0.33)', 'Reference(Bias region: none, Stabilizer gray: 0.0)'}, 'Location', 'SouthEast');
+    
+    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 12);
     grid on;
     box on
     
