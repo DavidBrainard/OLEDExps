@@ -1,4 +1,4 @@
-function AnalyzePreliminarySamsungOLEDdata
+function OLDAnalyzePreliminarySamsungOLEDdata
 
     close all
     clear all
@@ -69,13 +69,13 @@ function AnalyzePreliminarySamsungOLEDdata
     
     fprintf('\n%-30s: %d pixels', 'Stabilizer border width', runParams.stabilizerBorderWidth);
    
-    fprintf('\n%-30s: ', 'Stabilizer gray levels');
+    fprintf('\n%-30s: ', 'Stabilizer gray level(s)');
     fprintf('%2.2f ', runParams.stabilizerGrays);
     
-    fprintf('\n%-30s: ', 'Scene gray levels');
+    fprintf('\n%-30s: ', 'Scene mean gray level(s)');
     fprintf('%2.2f ', runParams.sceneGrays);
     
-    fprintf('\n%-30s: ', 'Bias gray levels');
+    fprintf('\n%-30s: ', 'Bias gray level(s)');
     fprintf('%2.2f ', runParams.biasGrays);
     
     fprintf('\n%-30s: ', 'Bias region sizes (x)');
@@ -90,12 +90,12 @@ function AnalyzePreliminarySamsungOLEDdata
     fprintf('\n%-30s: ', 'Gamma input values (right)');
     fprintf('%2.3f ', runParams.rightTargetGrays);
     
-    fprintf('\n%-30s: (%d,%d)', 'Left Target position', runParams.leftTarget.x0, runParams.leftTarget.y0);
-    fprintf('\n%-30s: (%dx%d)', 'Left Target size', runParams.leftTarget.width, runParams.leftTarget.height);
+    fprintf('\n%-30s: (%d,%d)', 'Target position (left)', runParams.leftTarget.x0, runParams.leftTarget.y0);
+    fprintf('\n%-30s: (%d,%d)', 'Target position (right)', runParams.rightTarget.x0, runParams.rightTarget.y0);
     
+    fprintf('\n%-30s: %dx%d', 'Target size (left)', runParams.leftTarget.width, runParams.leftTarget.height);
+    fprintf('\n%-30s: %dx%d', 'Target size (right)', runParams.rightTarget.width, runParams.rightTarget.height);
     
-    fprintf('\n%-30s: (%d,%d)', 'Right Target position', runParams.rightTarget.x0, runParams.rightTarget.y0);
-    fprintf('\n%-30s: (%dx%d)', 'Right Target size', runParams.rightTarget.width, runParams.rightTarget.height);
     
     
     fprintf('\n\n');
@@ -114,7 +114,12 @@ function AnalyzePreliminarySamsungOLEDdata
     
     conditionsNum = numel(allCondsData);
     
+    
+    totalEnergy = zeros(stabilizerGrayLevelNum, biasSizesNum,gammaInputValuesNum);
+
     for condIndex = 1:conditionsNum
+        
+        condIndex
         % get struct for current condition
         conditionData = allCondsData{condIndex};
        
@@ -126,13 +131,68 @@ function AnalyzePreliminarySamsungOLEDdata
         leftTargetGrayIndex = conditionData.leftTargetGrayIndex;
         rightTargetGrayIndex = conditionData.rightTargetGrayIndex;
         
+        
+        % analyze the stimFrame to extract various energies
+        stimFrame = double(squeeze(conditionData.demoFrame(:,:,1)));
+        stimFrame(find(stimFrame<0)) = 0;
+        stimFrame(find(stimFrame>1)) = 1;
+    
+        
+        
+        [biasRegionIndices, leftTargetRegionIndices, rightTargetRegionIndices, sceneRegionIndices, stabilizerRegionIndices] = ...
+            computeComponentIndices(stimFrame, biasSizeIndex, runParams); 
+        
+        
+        biasRegionEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex)        = sum(stimFrame(biasRegionIndices));
+        leftTargetRegionEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex)  = sum(stimFrame(leftTargetRegionIndices));
+        rightTargetRegionEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = sum(stimFrame(rightTargetRegionIndices));
+        sceneRegionEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex)       = sum(stimFrame(sceneRegionIndices));
+        stabilizerRegionEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex)  = sum(stimFrame(stabilizerRegionIndices));
+        
+        showRegionAnalysisResults = false;
+        if (showRegionAnalysisResults)
+            
+             % just for testing
+%             stimFrame(biasRegionIndices) = 0.5;
+%             stimFrame(leftTargetRegionIndices) = 0.25;
+%             stimFrame(rightTargetRegionIndices) = 0.75;
+%             stimFrame(sceneRegionIndices) = 0.9;
+%             stimFrame(stabilizerRegionIndices) = 0.2;
+        
+            [rows, cols] = size(stimFrame);
+            figure(99);
+            clf;
+            gain = rows/4;
+            for currentRow = 1:rows
+                
+                sliceProfile = squeeze(stimFrame(currentRow,:));
+                
+                subplot(1,2,1);
+                imagesc([1:cols], [1:rows], stimFrame);
+                hold on;
+                stairs([1:cols], currentRow - sliceProfile*gain, 'r-');
+                hold off;
+                colormap(gray);
+                set(gca, 'CLim', [0 1]);
+                axis 'ij'
+                
+                drawnow;
+                (0.2);
+            end
+
+            subplot(1,2,2);
+            stairs([1:cols], double(stimFrame(rows/2,:)), 'r-');
+            set(gca, 'YLim', [0 1]);
+        end % showRegionAnalysisResults
+    
+        
         if (printCalibrationFrames)
             h0 = figure(99);
             set(h0, 'Position', [100 100 754 453]);
-            imshow(conditionData.demoFrame);
+            imshow(stimFrame);
             hold on;
-            plot([1 size(conditionData.demoFrame,2) size(conditionData.demoFrame,2) 1 1], ...
-                 [1 1 size(conditionData.demoFrame,1) size(conditionData.demoFrame,1)  1], 'k-');
+            plot([1 size(stimFrame,2) size(stimFrame,2) 1 1], ...
+                 [1 1 size(stimFrame,1) size(stimFrame,1)  1], 'k-');
             hold off;
             colormap(gray(256));
             set(gca, 'CLim', [0 1]);
@@ -144,7 +204,7 @@ function AnalyzePreliminarySamsungOLEDdata
             set(h0,'PaperUnits','normalized');
             set(h0,'PaperPosition', [0 0 1 1]);
             print(gcf, '-dpdf', sprintf('Cond_%d.pdf', condIndex));
-        end
+        end % printCalibrationFrames
         
     
         if (condIndex == 1)
@@ -152,6 +212,12 @@ function AnalyzePreliminarySamsungOLEDdata
             vLambda = 683*SplineCmf(S_xyz1931, vLambda1931_originalSampling, desiredS);
             wave = SToWls(desiredS);
         end
+        
+        
+        totalEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = sum(sum(stimFrame));
+        leftGammaIn(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = runParams.leftTargetGrays(leftTargetGrayIndex);
+        rightGammaIn(stabilizerGrayIndex, biasSizeIndex, rightTargetGrayIndex) = runParams.rightTargetGrays(rightTargetGrayIndex);
+        
         
         % get SPD data 
         spd = conditionData.leftSPD;
@@ -166,6 +232,9 @@ function AnalyzePreliminarySamsungOLEDdata
                 leftTargetGrayIndex, ...
                 :) = spd;
         
+
+        leftGammaOut(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = sum(spd'.*vLambda);
+            
         if ~isempty(conditionData.rightSPD) 
             % get SPD data 
             spd = conditionData.rightSPD;
@@ -178,10 +247,81 @@ function AnalyzePreliminarySamsungOLEDdata
                     biasSizeIndex, ...
                     rightTargetGrayIndex, ...
                     :) = spd;
+            rightGammaOut(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = sum(spd'.*vLambda);
         else % ~isempty(conditionData.rightSPD)
             rightSPD = [];
+            rightGammaOut = [];
         end
     end % cond Index
+    
+    
+    size(leftGammaOut)
+    size(rightGammaOut)
+    
+    
+    %totalEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) 
+    %leftGammaIn(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) 
+    %leftGammaOut(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) 
+    %rightGammaIn(stabilizerGrayIndex, biasSizeIndex, rightTargetGrayIndex)
+    %rightGammaOut(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex)  
+    
+    h99 = figure(99);
+    clf;
+    subplot('Position', [0.04 0.04 0.9 0.9]);
+    referenceGammaCurveLeft = squeeze(leftGammaOut(1, 1,:));
+    referenceGammaCurveRight = squeeze(rightGammaOut(1, 1,:));
+    
+    hold on
+    for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
+        for biasSizeIndex = 1: biasSizesNum
+            gammaCurveLeft = squeeze(leftGammaOut(stabilizerGrayIndex, biasSizeIndex,:));
+            gammaCurveRight = squeeze(rightGammaOut(stabilizerGrayIndex, biasSizeIndex,:));
+             
+            ratiosLeft(stabilizerGrayIndex, biasSizeIndex,:) = gammaCurveLeft./referenceGammaCurveLeft;
+            ratiosRight(stabilizerGrayIndex, biasSizeIndex,:) = gammaCurveRight./referenceGammaCurveRight;
+            curveRatiosLeft(stabilizerGrayIndex, biasSizeIndex) = gammaCurveLeft \ referenceGammaCurveLeft;
+            curveRatiosRight(stabilizerGrayIndex, biasSizeIndex) = gammaCurveRight \ referenceGammaCurveRight;
+            
+            
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), gammaCurveLeft, 'ro-');
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), gammaCurveRight, 'bo-');
+            
+        end
+    end
+    hold off;
+    
+    xlabel('Stimulus energy');
+    set(gca, 'XLim', [min(totalEnergy(:)) max(totalEnergy(:))]);
+    
+    
+    h100 = figure(100);
+    clf;
+    subplot('Position', [0.04 0.04 0.9 0.9]);
+    
+    hold on
+    for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
+        for biasSizeIndex = 1: biasSizesNum
+            
+            
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), repmat(squeeze(curveRatiosLeft(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), 'r-');
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), repmat(squeeze(curveRatiosRight(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), 'b-');
+            
+            indices = find(~isnan(squeeze(ratiosLeft(stabilizerGrayIndex, biasSizeIndex,:))));
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), squeeze(ratiosLeft(stabilizerGrayIndex, biasSizeIndex, indices)), 'r-');
+            indices = find(~isnan(squeeze(ratiosRight(stabilizerGrayIndex, biasSizeIndex,:))));
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), squeeze(ratiosRight(stabilizerGrayIndex, biasSizeIndex, indices)), 'b-');
+            
+           
+        end
+    end
+    hold off;
+     
+    xlabel('Stimulus energy');
+    ylabel('Output Scaling');
+    set(gca, 'XLim', [min(totalEnergy(:)) max(totalEnergy(:))]);
+    
+    
+
     
     
     % plot data 
@@ -231,7 +371,10 @@ function AnalyzePreliminarySamsungOLEDdata
     end
     
     
- 
+    
+        
+        
+    
     
     
     gammaInputLeft  = runParams.leftTargetGrays;
@@ -419,6 +562,7 @@ function AnalyzePreliminarySamsungOLEDdata
             gammaCurve       = squeeze(gammaOutputLeft(stabilizerGrayIndex, biasSizeIndex, :));
             scalingFactor    = gammaCurve \ referenceGammaCurve;
             scaledGammaCurve = gammaCurve * scalingFactor;
+            scalingFactorMatrix(stabilizerGrayIndex, biasSizeIndex) = 1.0/scalingFactor;
             
             condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
             lineColor = lineColors(condIndex,:);
@@ -449,4 +593,120 @@ function AnalyzePreliminarySamsungOLEDdata
     set(h1,'PaperPosition', [0 0 1 1]);
     print(gcf, '-dpdf', '-r600', 'Fig1.pdf');
     
+    
+    figure(2);
+    imagesc(scalingFactorMatrix);
+    colormap(gray);
+    colorbar
+    set(gca, 'CLim', [0.5 1]);
+    drawnow;
+    
+    
+    figure(3);
+    clf;
+
+    
+    for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
+        for biasSizeIndex = 1: biasSizesNum 
+            
+            luminanceLeft  = squeeze(gammaOutputLeft(stabilizerGrayIndex, biasSizeIndex, :));
+            luminanceRight  = squeeze(gammaOutputRight(stabilizerGrayIndex, biasSizeIndex, :));
+            
+            
+            biasEnergy = squeeze(biasRegionEnergy(stabilizerGrayIndex, biasSizeIndex, :));
+            leftTargetEnergy = squeeze(leftTargetRegionEnergy(stabilizerGrayIndex, biasSizeIndex, :));
+            rightTargetEnergy = squeeze(rightTargetRegionEnergy(stabilizerGrayIndex, biasSizeIndex, :));
+            sceneEnergy = squeeze(sceneRegionEnergy(stabilizerGrayIndex, biasSizeIndex, :));
+            stabilizerEnergy = squeeze(stabilizerRegionEnergy(stabilizerGrayIndex, biasSizeIndex, :));
+            
+            % mean over gamma input curves, so these should be constant
+            biasEnergy = mean(biasEnergy);
+            sceneEnergy = mean(sceneEnergy);
+            stabilizerEnergy = mean(stabilizerEnergy);
+            
+            scaleFactor = scalingFactorMatrix(stabilizerGrayIndex, biasSizeIndex);
+            subplot(1,4,1);
+            hold on;
+            plot(stabilizerEnergy+biasEnergy+sceneEnergy, scaleFactor, 'ks');
+            
+            subplot(1,4,2);
+            hold on;
+            plot(stabilizerEnergy, scaleFactor, 'ks');
+            
+            subplot(1,4,3);
+            hold on;
+            plot(biasEnergy, scaleFactor, 'ks');
+            
+            subplot(1,4,4);
+            hold on;
+            plot(sceneEnergy, scaleFactor, 'ks');
+            
+        end
+    end
+    
+    subplot(1,4,1);
+    xlabel('total energy');
+    
+    subplot(1,4,2);
+    xlabel('stabilizer energy');
+    
+    subplot(1,4,3);
+    xlabel('bias energy');
+    
+    subplot(1,4,4);
+    xlabel('scene energy');
+    
+    
+    
+    
+    
+end
+
+
+function [biasRegionExcludingTargetRegionIndices, leftTargetRegionIndices, rightTargetRegionIndices, sceneRegionExcludingBiasAndTargetRegionIndices, stabilizerRegionIndices] = ...
+            computeComponentIndices(stimFrame, biasSizeIndex, runParams)
+        % indices of various regions
+        biasRegionXindices  = round(0.5*(runParams.leftTarget.x0 - runParams.biasSizes(biasSizeIndex, 1)/2 + [1:runParams.biasSizes(biasSizeIndex, 1)]));
+        biasRegionYindices  = round(0.5*(runParams.leftTarget.y0 - runParams.biasSizes(biasSizeIndex, 2)/2 + [1:runParams.biasSizes(biasSizeIndex, 2)]));
+        leftTargetXindices  = round(0.5*(runParams.leftTarget.x0 - runParams.leftTarget.width/2 + [1:runParams.leftTarget.width]));
+        leftTargetYindices  = round(0.5*(runParams.leftTarget.y0 - runParams.leftTarget.height/2 + [1:runParams.leftTarget.height]));
+        rightTargetXindices = round(0.5*(runParams.rightTarget.x0 - runParams.rightTarget.width/2 + [1:runParams.rightTarget.width]));
+        rightTargetYindices = round(0.5*(runParams.rightTarget.y0 - runParams.rightTarget.height/2 + [1:runParams.rightTarget.height]));
+        sceneRegionXindices = round(0.5*([runParams.stabilizerBorderWidth + [1: size(stimFrame,2)*2-runParams.stabilizerBorderWidth*2]]));
+        sceneRegionYindices = round(0.5*([runParams.stabilizerBorderWidth + [1: size(stimFrame,1)*2-runParams.stabilizerBorderWidth*2]]));
+        frameXindices    = [1:size(stimFrame,2)];
+        frameYindices    = [1:size(stimFrame,1)];
+        
+        [X,Y] = meshgrid(frameYindices, frameXindices);
+        frameIndices = sub2ind(size(stimFrame), X,Y);
+  
+        
+        [X,Y] = meshgrid(biasRegionYindices, biasRegionXindices);
+        biasRegionIndices = sub2ind(size(stimFrame), X,Y);
+        
+        [X,Y] = meshgrid(leftTargetYindices, leftTargetXindices);
+        leftTargetRegionIndices = sub2ind(size(stimFrame), X,Y);
+        
+        [X,Y] = meshgrid(rightTargetYindices, rightTargetXindices);
+        rightTargetRegionIndices = sub2ind(size(stimFrame), X,Y);
+        
+        [X,Y] = meshgrid(sceneRegionYindices, sceneRegionXindices);
+        sceneRegionIndices = sub2ind(size(stimFrame), X,Y);
+        
+        stabilizerRegionIndices = setdiff(frameIndices, sceneRegionIndices);
+        
+        biasRegionExcludingTargetRegionIndices = setdiff(biasRegionIndices, leftTargetRegionIndices);
+        biasRegionExcludingTargetRegionIndices = setdiff(biasRegionExcludingTargetRegionIndices, rightTargetRegionIndices);
+        
+        sceneRegionExcludingBiasAndTargetRegionIndices = setdiff(sceneRegionIndices, biasRegionIndices);
+        sceneRegionExcludingBiasAndTargetRegionIndices = setdiff(sceneRegionExcludingBiasAndTargetRegionIndices, leftTargetRegionIndices);
+        sceneRegionExcludingBiasAndTargetRegionIndices = setdiff(sceneRegionExcludingBiasAndTargetRegionIndices, rightTargetRegionIndices);
+        
+        biasRegionExcludingTargetRegionIndices = biasRegionExcludingTargetRegionIndices(:);
+        leftTargetRegionIndices = leftTargetRegionIndices(:);
+        rightTargetRegionIndices = rightTargetRegionIndices(:);
+        sceneRegionExcludingBiasAndTargetRegionIndices = sceneRegionExcludingBiasAndTargetRegionIndices(:);
+        stabilizerRegionIndices = stabilizerRegionIndices(:);
+        
+        
 end
