@@ -12,7 +12,7 @@ function AnalyzePreliminarySamsungOLEDdata
     calibrationFileName = './PreliminaryData/SamsungOLED_calib.mat';
     
     % Double target runs
-    %calibrationFileName = './PreliminaryData/SamsungOLED_DoubleTargetCalib1.mat';
+    calibrationFileName = './PreliminaryData/SamsungOLED_DoubleTargetCalib1.mat';
     
     % create a MAT-file object that supports partial loading and saving.
     matOBJ = matfile(calibrationFileName, 'Writable', false);
@@ -35,7 +35,7 @@ function AnalyzePreliminarySamsungOLEDdata
     % ask the user to select one
     defaultDataSetNo = numel(varList);
     dataSetIndex = input(sprintf('\nSelect a data set (1-%d) [%d]: ', defaultDataSetNo, defaultDataSetNo));
-    if isempty(dataSetIndex) || (dataSetIndex < 1) || (dataSetIndex > defaultDataSetNo)
+    iextf isempty(dataSetIndex) || (dataSetIndex < 1) || (dataSetIndex > defaultDataSetNo)
        dataSetIndex = defaultDataSetNo;
     end
       
@@ -244,8 +244,8 @@ function AnalyzePreliminarySamsungOLEDdata
     ylabel('luminance (cd/m2)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
     grid on;
-    legend_handle = legend({'left', 'right'}, 'Location', 'NorthEast');
-    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
+   % legend_handle = legend({'left', 'right'}, 'Location', 'NorthEast');
+   % set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
     
     box on
     
