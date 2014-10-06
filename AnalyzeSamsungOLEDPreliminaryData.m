@@ -1,4 +1,4 @@
-function OLDAnalyzePreliminarySamsungOLEDdata
+function AnalyzePreliminarySamsungOLEDdata
 
     close all
     clear all
@@ -315,7 +315,7 @@ function OLDAnalyzePreliminarySamsungOLEDdata
     xlabel('Stimulus energy (sum of all pixel values)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     ylabel('luminance (cd/m2)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     ylabel('Gamma Ratio', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-    set(gca, 'XLim', [min(totalEnergy(:))-energyMargin max(totalEnergy(:))+energyMargin], 'YLim', [0.4 1.05], 'YTick', [0.1:0.1:1.1]);
+    set(gca, 'XLim', [min(totalEnergy(:))-energyMargin max(totalEnergy(:))+energyMargin], 'YLim', [0.35 1.05], 'YTick', [0.1:0.1:1.1]);
     set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [0.75 0.75 0.75]);
     grid on;
     box on
