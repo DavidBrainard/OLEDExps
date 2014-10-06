@@ -12,7 +12,7 @@ function AnalyzePreliminarySamsungOLEDdata
     calibrationFileName = './PreliminaryData/SamsungOLED_calib.mat';
     
     % Double target runs
-    calibrationFileName = './PreliminaryData/SamsungOLED_DoubleTargetCalib1.mat';
+    %calibrationFileName = './PreliminaryData/SamsungOLED_DoubleTargetCalib1.mat';
     
     % create a MAT-file object that supports partial loading and saving.
     matOBJ = matfile(calibrationFileName, 'Writable', false);
@@ -35,7 +35,7 @@ function AnalyzePreliminarySamsungOLEDdata
     % ask the user to select one
     defaultDataSetNo = numel(varList);
     dataSetIndex = input(sprintf('\nSelect a data set (1-%d) [%d]: ', defaultDataSetNo, defaultDataSetNo));
-    iextf isempty(dataSetIndex) || (dataSetIndex < 1) || (dataSetIndex > defaultDataSetNo)
+    if isempty(dataSetIndex) || (dataSetIndex < 1) || (dataSetIndex > defaultDataSetNo)
        dataSetIndex = defaultDataSetNo;
     end
       
@@ -345,6 +345,76 @@ function AnalyzePreliminarySamsungOLEDdata
     print(gcf, '-dpdf', '-r600', 'Fig2.pdf');
     
 
+    stabilizerGrayIndex = 1;
+    biasSizeIndex = 3;
+            
+    condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
+    lineColor = lineColors(condIndex,:);
+            
+    gammaCurveLeft = squeeze(leftGammaOut(stabilizerGrayIndex, biasSizeIndex,:));
+            
+    % Individual points ratio
+    ratiosLeft = gammaCurveLeft./referenceGammaCurveLeft;
+    % individual gamma point ratios (left target)
+    
+    h3 = figure(3);
+    clf;
+    subplot(1,3,1);
+    energy = squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices));
+    dE = max(energy(:))*0.01;
+    energyLims = [min(energy(:))-dE max(energy(:))+dE];
+    
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  ratiosLeft(indices), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+    xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    ylabel('Gamma Ratio (measured/reference)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    set(gca, 'XLim', energyLims, 'YLim', [0.35 1.05], 'YTick', [0.0:0.1:1.1]);
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
+    axis 'square'
+    grid on;
+    box on
+    
+    
+    subplot(1,3,2);
+    hold on
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  gammaCurveLeft/max(gammaCurveLeft), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  referenceGammaCurveLeft/max(referenceGammaCurveLeft), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
+    hold off
+    xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    ylabel('Normalized luminance', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    set(gca, 'XLim', energyLims, 'YLim', [-0.05 1.05], 'YTick', [0.0:0.1:1.1]);
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
+    axis 'square'
+    legend_handle = legend({'gamma curve', 'reference gamma curve'}, 'Location', 'NorthWest');
+    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
+    grid on;
+    box on
+    
+    
+    
+    subplot(1,3,3);
+    hold on
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  gammaCurveLeft/max(gammaCurveLeft), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)),  referenceGammaCurveLeft/max(referenceGammaCurveLeft), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
+    hold off
+    set(gca, 'YScale', 'log', 'XScale', 'log');
+    xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    ylabel('Normalized luminance', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    set(gca, 'XLim', energyLims, 'YLim', [-0.05 1.05], 'YTick', [0.003 0.01 0.03 0.1 0.3 1.0]);
+    set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [1 1 1]);
+    axis 'square'
+    legend_handle = legend({'gamma curve', 'reference gamma curve'}, 'Location', 'NorthWest');
+    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
+    grid on;
+    box on
+    
+    set(h3, 'Color', 0.9*[1 1 1]);
+    set(h3,'PaperOrientation','Portrait');
+    set(h3,'PaperUnits','normalized');
+    set(h3,'PaperType', 'uslegal');
+    set(h3, 'InvertHardCopy', 'off');
+    set(h3,'PaperPosition', [0 0 1 1]);
+    print(gcf, '-dpdf', '-r600', 'Fig3.pdf');
+    
     
     
     % plot data 
