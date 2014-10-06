@@ -166,7 +166,7 @@ function AnalyzePreliminarySamsungOLEDdata
         end
         
         
-        totalEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = sum(sum(stimFrame));
+        totalEnergy(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = sum(sum(stimFrame))/numel(stimFrame);
         leftGammaIn(stabilizerGrayIndex, biasSizeIndex, leftTargetGrayIndex) = runParams.leftTargetGrays(leftTargetGrayIndex);
         rightGammaIn(stabilizerGrayIndex, biasSizeIndex, rightTargetGrayIndex) = runParams.rightTargetGrays(rightTargetGrayIndex);
         
@@ -312,7 +312,7 @@ function AnalyzePreliminarySamsungOLEDdata
     
     hold off;
      
-    xlabel('Stimulus energy (sum of all pixel values)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+    xlabel('Stimulus energy (mean across all pixel settings)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     ylabel('luminance (cd/m2)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     ylabel('Gamma Ratio', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     set(gca, 'XLim', [min(totalEnergy(:))-energyMargin max(totalEnergy(:))+energyMargin], 'YLim', [0.35 1.05], 'YTick', [0.1:0.1:1.1]);
@@ -408,11 +408,11 @@ function AnalyzePreliminarySamsungOLEDdata
     set(h1, 'Position', [figXo figYo figWidth figHeight]);
     clf;
     
-    lineColors = lines(stabilizerGrayLevelNum*biasSizesNum);
+    lineColors = jet(stabilizerGrayLevelNum*biasSizesNum);
     
     % Subplot panel sizes and margins
-    width = 0.85/(biasSizesNum+1);
-    height = 0.7/(stabilizerGrayLevelNum+1);
+    width = 0.88/(biasSizesNum);
+    height = 0.74/(stabilizerGrayLevelNum);
     marginX = 0.02;
     marginY = 0.05;
     
@@ -444,7 +444,7 @@ function AnalyzePreliminarySamsungOLEDdata
             condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
             lineColor = lineColors(condIndex,:);
             
-            plot(gammaInputLeft, gammaCurveLeft, 'ks-', 'LineWidth', 3.0, 'MarkerSize', 8, 'MarkerFaceColor', [0.8 0.8 0.8], 'Color', lineColor);
+            plot(gammaInputLeft, gammaCurveLeft, 'ko-', 'LineWidth', 2.0, 'MarkerSize', 8, 'MarkerFaceColor', [1 1 1], 'Color', lineColor);
             
             if (~isempty(gammaInputRight))
                 gammaCurveRight = squeeze(gammaOutputRight(stabilizerGrayIndex, biasSizeIndex, :));
@@ -455,7 +455,7 @@ function AnalyzePreliminarySamsungOLEDdata
                 end
                 
                 hold on;
-                plot(gammaInput, gammaCurveRight, 'k.-', 'LineWidth', 3.0, 'MarkerSize', 8);
+                plot(gammaInput, gammaCurveRight, 'ks-', 'LineWidth', 2.0, 'MarkerSize', 8, 'MarkerFaceColor', [1 1 1]);
                 if (maxGammaInputRight == minGammaInputRight)
                     plot([minGammaInputRight, maxGammaInputRight], [0 mean(gammaCurveRight)], 'k-', 'LineWidth', 3.0);
                     plot(minGammaInputRight, 0, 'kv', 'LineWidth', 2.0, 'MarkerFaceColor', [0.6 0.6 0.6]);
@@ -465,7 +465,7 @@ function AnalyzePreliminarySamsungOLEDdata
                 set(legend_handle, 'Box', 'off')
             end
             
-            set(gca, 'FontName', 'Helvetica', 'FontSize', 8);
+            set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [0.75 0.75 0.75]);
             grid on;
             box on
             
@@ -479,127 +479,36 @@ function AnalyzePreliminarySamsungOLEDdata
                ylabel(''); 
                set(gca, 'YTickLabel', []);
             end
-            xlabel('');
             
-            title(sprintf('Stabilizer gray = %2.2f; \nBias WxH = %2.0fx%2.0f pxls.', stabilizerGray, biasSizeX, biasSizeY), 'FontName', 'Helvetica', 'FontSize', 8);
+            if (stabilizerGrayIndex == stabilizerGrayLevelNum)
+                xlabel('settings value', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
+            else
+                xlabel('');
+            end
             
-            % The scaled gamma curves for the CurrentStabilizerGray
-            left = 3*marginX + biasSizesNum*(width+marginX);
-            subplot('Position', [left bottom width height]);
             
-            hold on;
-            plot(gammaInputLeft, scaledGammaCurve, 'k-', 'LineWidth', 3.0, 'MarkerSize', 8, 'MarkerFaceColor', [0.8 0.8 0.8], 'Color', lineColors(condIndex,:));
-            legendMatrix{biasSizeIndex} = sprintf('BiasWxH: %2.0fx%2.0f (scale: %2.2f)', biasSizeX, biasSizeY, 1.0/scalingFactor);     
+            title(sprintf('Stabilizer gray = %2.2f; \nBias WxH = %2.0fx%2.0f pxls.', stabilizerGray, biasSizeX, biasSizeY), 'FontName', 'Helvetica', 'FontSize', 8, 'BackgroundColor',[.99 .99 .48], 'EdgeColor', [0 0 0]);
+           
         end
         
-        xlabel('');
         ylabel('');
         set(gca, 'YTickLabel', []);
         set(gca, 'YLim', [0 maxGammaOutputLeft]);
         set(gca, 'XTick', [0:0.2:1.0], 'YTick', [0:100:1000]);
-        set(gca, 'FontName', 'Helvetica', 'FontSize', 8);
+        set(gca, 'FontName', 'Helvetica', 'FontSize', 8, 'Color', [0.75 0.75 0.75]);
         grid on;
         box on
-            
-        % legend and title
-        legend_handle = legend(legendMatrix, 'FontName', 'Helvetica', 'FontSize', 6, 'Location', 'Best');
-        set(legend_handle, 'Box', 'off')
-        title(sprintf('Scaled gammas w/r to:\nBiasWxH = %2.2f x %2.2f pxls', referenceBiasSizeX, referenceBiasSizeY), 'FontName', 'Helvetica', 'FontSize', 8, 'BackgroundColor',[.99 .99 .48], 'EdgeColor', [0 0 0]);
+
     end
     
    
-    % Second scan  (scaled curves for top-to-bottom conditions)
-    referenceStabilizerGrayIndex = 1;
-    for biasSizeIndex = 1: biasSizesNum
-        referenceGammaCurve = squeeze(gammaOutputLeft(referenceStabilizerGrayIndex, biasSizeIndex,:));
-        referenceStabilizerGray  = runParams.stabilizerGrays(referenceStabilizerGrayIndex);
-        
-        legendMatrix = {};
-        for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
-            stabilizerGray   = runParams.stabilizerGrays(stabilizerGrayIndex);
-            gammaCurve       = squeeze(gammaOutputLeft(stabilizerGrayIndex, biasSizeIndex, :));
-            scalingFactor    = gammaCurve \ referenceGammaCurve;
-            scaledGammaCurve = gammaCurve * scalingFactor;
-            
-            left = 3*marginX + (biasSizeIndex-1)*(width+marginX);
-            bottom = 1-(stabilizerGrayLevelNum+1)*(height+marginY);
-            subplot('Position', [left bottom width height]);   
-            
-            condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
-            lineColor = lineColors(condIndex,:);
-            
-            hold on;
-            plot(gammaInputLeft, scaledGammaCurve, 'k-', 'LineWidth', 3.0, 'MarkerSize', 8, 'MarkerFaceColor', [0.8 0.8 0.8], 'Color', lineColors(condIndex,:));
-            legendMatrix{stabilizerGrayIndex} = sprintf('Stabil. gray = %2.2f (scale: %2.2f)', stabilizerGray, 1.0/scalingFactor);
-        end
-        
-        xlabel('settings value', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-        if (biasSizeIndex == 1)
-               ylabel('luminance (cd/m2)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-               set(gca, 'YTickLabel', [0:100:1000]);
-        else
-               ylabel(''); 
-               set(gca, 'YTickLabel', []);
-        end
-            
-        set(gca, 'YLim', [0 maxGammaOutputLeft]);
-        set(gca, 'XTick', [0:0.2:1.0], 'YTick', [0:100:1000]);
-        set(gca, 'FontName', 'Helvetica', 'FontSize', 8);
-        grid on;
-        box on
-        
-        % legend and title
-        legend_handle = legend(legendMatrix, 'FontName', 'Helvetica', 'FontSize', 6, 'Location', 'Best');
-        set(legend_handle, 'Box', 'off')
-        title(sprintf('Scaled gammas w/r to:\nStabilizerGray = %2.2f', referenceStabilizerGray), 'FontName', 'Helvetica', 'FontSize', 8, 'BackgroundColor',[.99 .99 .48], 'EdgeColor', [0 0 0]);
-    end % biasSizeIndex
-    
-
-    % Third scan (all scaled curves)
-    referenceGammaCurve = squeeze(gammaOutputLeft(referenceStabilizerGrayIndex, referenceBiasSizeIndex,:));
-    referenceStabilizerGray   = runParams.stabilizerGrays(referenceStabilizerGrayIndex);
-            
-    condIndex = 0;
-    legendMatrix = {};
-    
-    left = 3*marginX + biasSizesNum*(width+marginX);
-    bottom = 1-(stabilizerGrayLevelNum+1)*(height+marginY);
-    subplot('Position', [left bottom width height]);   
-    hold on;
-    
-    for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
-        for biasSizeIndex = 1: biasSizesNum
-            gammaCurve       = squeeze(gammaOutputLeft(stabilizerGrayIndex, biasSizeIndex, :));
-            scalingFactor    = gammaCurve \ referenceGammaCurve;
-            scaledGammaCurve = gammaCurve * scalingFactor;
-            scalingFactorMatrix(stabilizerGrayIndex, biasSizeIndex) = 1.0/scalingFactor;
-            
-            condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
-            lineColor = lineColors(condIndex,:);
-            plot(gammaInputLeft, scaledGammaCurve, 'k-', 'LineWidth', 3.0, 'MarkerSize', 8, 'MarkerFaceColor', [0.8 0.8 0.8], 'Color', lineColors(condIndex,:));
-            legendMatrix{condIndex} = sprintf('scale: %2.2f', 1.0/scalingFactor);
-        end       
-    end % biasSizeIndex
-    
-    xlabel('settings value', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
-    ylabel('');
-    set(gca, 'YTickLabel', []);
-    set(gca, 'YLim', [0 maxGammaOutputLeft]);
-    set(gca, 'XTick', [0:0.2:1.0], 'YTick', [0:100:1000]);
-    set(gca, 'FontName', 'Helvetica', 'FontSize', 8);
-    grid on;
-    box on
-    
-    % legend and title
-    legend_handle = legend(legendMatrix, 'FontName', 'Helvetica', 'FontSize', 6, 'Location', 'NorthWest');
-    set(legend_handle, 'Box', 'off')
-    title(sprintf('Scaled gammas w/r to:\nStab.Gray=%2.2f, BiasWxH=%2.0fx%2.0f pxls.', referenceStabilizerGray, referenceBiasSizeX, referenceBiasSizeY), 'FontName', 'Helvetica', 'FontSize', 8, 'BackgroundColor',[.99 .99 .48], 'EdgeColor', [0 0 0]);
-
         
     
     % Print figure
+    set(h1, 'Color', [1 1 1]);
     set(h1,'PaperOrientation','Portrait');
     set(h1,'PaperUnits','normalized');
+    set(h1, 'InvertHardCopy', 'off');
     set(h1,'PaperPosition', [0 0 1 1]);
     print(gcf, '-dpdf', '-r600', 'Fig1.pdf');
     
