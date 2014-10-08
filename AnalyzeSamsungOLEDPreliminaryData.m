@@ -203,7 +203,7 @@ function AnalyzePreliminarySamsungOLEDdata
     
     h2 = figure(2);
     figXo = 100;   figYo = 100;
-    figWidth = 900; figHeight = 200;
+    figWidth = 1200; figHeight = 800;
     set(h2, 'Position', [figXo figYo figWidth figHeight]);
     clf;
     
@@ -224,11 +224,11 @@ function AnalyzePreliminarySamsungOLEDdata
              
             condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
             lineColor = lineColors(condIndex,:);
-            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), gammaCurveLeft, 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6.0);
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), gammaCurveLeft, 'o-', 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 1.0);
             
             if (~isempty(rightGammaOut))
                 gammaCurveRight = squeeze(rightGammaOut(stabilizerGrayIndex, biasSizeIndex,:));
-                plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), gammaCurveRight, 'ks-', 'MarkerSize', 6, 'MarkerFaceColor', [1 1 1]);
+                plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), gammaCurveRight, 'ks-', 'MarkerSize', 8, 'MarkerFaceColor', [1 1 1]);
             end
         end
     end
@@ -279,7 +279,7 @@ function AnalyzePreliminarySamsungOLEDdata
            
 
              % individual gamma point ratios (left target)
-            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), squeeze(ratiosLeft(stabilizerGrayIndex, biasSizeIndex, indices)), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), squeeze(ratiosLeft(stabilizerGrayIndex, biasSizeIndex, indices)), 'o-', 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 1); 
 
             biasSizeX = runParams.biasSizes(biasSizeIndex, 1);
             biasSizeY = runParams.biasSizes(biasSizeIndex, 2);
@@ -292,7 +292,7 @@ function AnalyzePreliminarySamsungOLEDdata
         % individual gamma point ratios (right target)
         for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
             for biasSizeIndex = 1: biasSizesNum
-                plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), squeeze(ratiosRight(stabilizerGrayIndex, biasSizeIndex, indices)), 'ks-', 'LineWidth', 6, 'MarkerSize', 6, 'MarkerFaceColor', [1 1 1]); 
+                plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), squeeze(ratiosRight(stabilizerGrayIndex, biasSizeIndex, indices)), 'ks-', 'LineWidth', 1, 'MarkerSize', 8, 'MarkerFaceColor', [1 1 1]); 
             end
         end
     end
@@ -312,11 +312,11 @@ function AnalyzePreliminarySamsungOLEDdata
             
             condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
             lineColor = lineColors(condIndex,:);  
-            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), repmat(squeeze(curveRatiosLeft(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), '-', 'LineWidth', 4, 'Color', lineColor);  
+            plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)), repmat(squeeze(curveRatiosLeft(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), '-', 'LineWidth', 1, 'Color', lineColor);  
             
             if (~isempty(rightGammaOut))
                 curveRatiosRight(stabilizerGrayIndex, biasSizeIndex) = 1.0/(gammaCurveRight(indices) \ referenceGammaCurveRight(indices));
-                plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), repmat(squeeze(curveRatiosRight(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), 'k-', 'LineWidth', 4);
+                plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,:)), repmat(squeeze(curveRatiosRight(stabilizerGrayIndex, biasSizeIndex)), [1 size(totalEnergy,3)]), 'k-', 'LineWidth', 1);
             end
        end
     end
@@ -333,7 +333,7 @@ function AnalyzePreliminarySamsungOLEDdata
     grid on;
     box on
     legend_handle = legend(legendMatrix{:}, 'Location', 'SouthWest');
-    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 8);
+    set(legend_handle, 'Box', 'on', 'FontName', 'Helvetica', 'FontSize', 12);
             
     %Print figure
     set(h2, 'Color', 0.9*[1 1 1]);
@@ -342,7 +342,7 @@ function AnalyzePreliminarySamsungOLEDdata
     set(h2,'PaperType', 'uslegal');
     set(h2, 'InvertHardCopy', 'off');
     set(h2,'PaperPosition', [0 0 1 1]);
-    print(gcf, '-dpdf', '-r600', 'Fig2.pdf');
+    print(gcf, '-dpdf', 'Fig2.pdf');
     
 
     stabilizerGrayIndex = 2;
@@ -366,7 +366,7 @@ function AnalyzePreliminarySamsungOLEDdata
     energyLims = [0.493 0.498];
     energyTicks = energyLims(1):0.001:energyLims(2);
     
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  ratiosLeft(indices), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  ratiosLeft(indices), 'o-', 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 1); 
     xlabel('');
     ylabel('Gamma Ratio (measured/reference)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
     set(gca, 'XLim', energyLims, 'YLim', [0.35 1.05], 'YTick', [0.0:0.1:1.1], 'XTick', energyTicks);
@@ -379,8 +379,8 @@ function AnalyzePreliminarySamsungOLEDdata
     
     subplot('Position', [0.07 0.356 0.91 0.3]);
     hold on
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  gammaCurveLeft(indices)/max(gammaCurveLeft(indices)), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  referenceGammaCurveLeft(indices)/max(referenceGammaCurveLeft(indices)), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  gammaCurveLeft(indices)/max(gammaCurveLeft(indices)), 'o-', 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 1); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  referenceGammaCurveLeft(indices)/max(referenceGammaCurveLeft(indices)), 'ks-', 'MarkerSize', 8,  'LineWidth', 1); 
     hold off
     xlabel('');
     ylabel('Normalized luminance', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
@@ -396,8 +396,8 @@ function AnalyzePreliminarySamsungOLEDdata
     
     subplot('Position', [0.07 0.03 0.91 0.3]);
     hold on
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  gammaCurveLeft(indices)/max(gammaCurveLeft(indices)), 'o-', 'MarkerSize', 6, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 6); 
-    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  referenceGammaCurveLeft(indices)/max(referenceGammaCurveLeft(indices)), 'ks-', 'MarkerSize', 6,  'LineWidth', 6); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  gammaCurveLeft(indices)/max(gammaCurveLeft(indices)), 'o-', 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5, 'LineWidth', 1); 
+    plot(squeeze(totalEnergy(stabilizerGrayIndex, biasSizeIndex,indices)),  referenceGammaCurveLeft(indices)/max(referenceGammaCurveLeft(indices)), 'ks-', 'MarkerSize', 8,  'LineWidth', 1); 
     hold off
     set(gca, 'YScale', 'log', 'XScale', 'log');
     xlabel('Panel activation (mean setting across all pixels)', 'FontName', 'Helvetica', 'FontSize', 10, 'FontWeight', 'bold');
@@ -417,7 +417,7 @@ function AnalyzePreliminarySamsungOLEDdata
     set(h3,'PaperType', 'uslegal');
     set(h3, 'InvertHardCopy', 'off');
     set(h3,'PaperPosition', [0 0 1 1]);
-    print(gcf, '-dpdf', '-r600', 'Fig3.pdf');
+    print(gcf, '-dpdf', 'Fig3.pdf');
     
     
     
@@ -531,7 +531,7 @@ function AnalyzePreliminarySamsungOLEDdata
             condIndex = (stabilizerGrayIndex-1)* biasSizesNum + biasSizeIndex;
             lineColor = lineColors(condIndex,:);
             
-            plot(gammaInputLeft, gammaCurveLeft, 'ko-', 'LineWidth', 6.0, 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5);
+            plot(gammaInputLeft, gammaCurveLeft, 'ko-', 'LineWidth', 1.0, 'MarkerSize', 8, 'MarkerFaceColor', lineColor, 'Color', lineColor*0.5);
             
             if (~isempty(gammaInputRight))
                 gammaCurveRight = squeeze(gammaOutputRight(stabilizerGrayIndex, biasSizeIndex, :));
@@ -542,10 +542,10 @@ function AnalyzePreliminarySamsungOLEDdata
                 end
                 
                 hold on;
-                plot(gammaInput, gammaCurveRight, 'ks-', 'LineWidth', 2.0, 'MarkerSize', 8, 'MarkerFaceColor', [1 1 1]);
+                plot(gammaInput, gammaCurveRight, 'ks-', 'LineWidth', 1.0, 'MarkerSize', 8, 'MarkerFaceColor', [1 1 1]);
                 if (maxGammaInputRight == minGammaInputRight)
-                    plot([minGammaInputRight, maxGammaInputRight], [0 mean(gammaCurveRight)], 'k-', 'LineWidth', 3.0);
-                    plot(minGammaInputRight, 0, 'kv', 'LineWidth', 6.0, 'MarkerFaceColor', [0.6 0.6 0.6]);
+                    plot([minGammaInputRight, maxGammaInputRight], [0 mean(gammaCurveRight)], 'k-', 'LineWidth', 1.0);
+                    plot(minGammaInputRight, 0, 'kv', 'LineWidth', 1.0, 'MarkerFaceColor', [0.6 0.6 0.6]);
                 end
                 hold off;
                 legend_handle = legend({'Left', 'Right'}, 'FontName', 'Helvetica', 'FontSize', 6, 'Location', 'NorthWest');
@@ -597,7 +597,7 @@ function AnalyzePreliminarySamsungOLEDdata
     set(h1,'PaperUnits','normalized');
     set(h1, 'InvertHardCopy', 'off');
     set(h1,'PaperPosition', [0 0 1 1]);
-    print(gcf, '-dpdf', '-r600', 'Fig1.pdf');
+    print(gcf, '-dpdf', 'Fig1.pdf');
     
     
 end
