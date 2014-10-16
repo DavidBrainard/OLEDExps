@@ -488,6 +488,27 @@ function AnalyzePreliminarySamsungOLEDdata
     
     
     
+    h1 = figure(99);
+    clf;
+    hold on;
+    interpolatedSettingsValues = 0:0.001:1;
+    c50 = [];
+    for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
+        for biasSizeIndex = 1: biasSizesNum
+            gammaCurveLeft = squeeze(gammaOutputLeft(stabilizerGrayIndex, biasSizeIndex, :));
+            gammaCurveLeft = gammaCurveLeft / max(gammaCurveLeft(:));
+            interpolatedGammaCurveLeft = interp1(gammaInputLeft, gammaCurveLeft, interpolatedSettingsValues, 'pchip');
+            plot(gammaInputLeft, gammaCurveLeft, 'ks', 'MarkerSize', 12);
+            plot(interpolatedSettingsValues, interpolatedGammaCurveLeft, 'r-');
+            % search to find settings that produce 0.5 output
+            [c,index] = min(abs(interpolatedGammaCurveLeft-0.5));
+            c50 = [c50 interpolatedSettingsValues(index)];
+            plot(interpolatedSettingsValues(index), interpolatedGammaCurveLeft(index), 'bo');
+        end
+    end
+    drawnow;
+    c50
+    pause;
     
     h1 = figure(1);
     figXo = 2560;   figYo = 360;
