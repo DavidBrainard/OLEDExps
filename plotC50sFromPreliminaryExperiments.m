@@ -24,7 +24,7 @@ function plotC50sFromPreliminaryExperiments
     grid on;
     box on
     
-     % Print figure
+    % Print figure
     set(h1, 'Color', 0.9*[1 1 1]);
     set(h1,'PaperOrientation','Portrait');
     set(h1,'PaperUnits','normalized');

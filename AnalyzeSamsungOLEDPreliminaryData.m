@@ -493,6 +493,16 @@ function AnalyzePreliminarySamsungOLEDdata
     hold on;
     interpolatedSettingsValues = 0:0.001:1;
     c50 = [];
+    if (exist('GammaTables.mat') == 2)
+        s = load('GammaTables.mat');
+        if isfield(s, 'data')
+            data.gammaTables = s.data.gammaTables;
+            data.c50 = s.data.c50;
+        end
+    else
+       em = []; 
+       save('GammaTables.mat', 'em')
+    end
     for stabilizerGrayIndex = 1:stabilizerGrayLevelNum
         for biasSizeIndex = 1: biasSizesNum
             gammaCurveLeft = squeeze(gammaOutputLeft(stabilizerGrayIndex, biasSizeIndex, :));
@@ -502,12 +512,16 @@ function AnalyzePreliminarySamsungOLEDdata
             plot(interpolatedSettingsValues, interpolatedGammaCurveLeft, 'r-');
             % search to find settings that produce 0.5 output
             [c,index] = min(abs(interpolatedGammaCurveLeft-0.5));
-            c50 = [c50 interpolatedSettingsValues(index)];
             plot(interpolatedSettingsValues(index), interpolatedGammaCurveLeft(index), 'bo');
+            data.gammaTables(dataSetIndex,stabilizerGrayIndex,biasSizeIndex,:)= interpolatedGammaCurveLeft;
+            data.c50(dataSetIndex,stabilizerGrayIndex,biasSizeIndex)       = interpolatedSettingsValues(index);
         end
     end
     drawnow;
-    c50
+    
+    save('GammaTables.mat', 'interpolatedSettingsValues', 'data', '-append');
+    whos('-file','GammaTables.mat')
+    fprintf('saved data');
     pause;
     
     h1 = figure(1);
