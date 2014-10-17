@@ -13,26 +13,17 @@ function playSequence
             sequence = stimuli{exponentOfOneOverFIndex, oriBiasIndex}.imageSequence;
             for frameIndex = 1:size(sequence, 2)
                 image = squeeze(sequence(1, frameIndex,:,:));
-                pixelatedImage = squeeze(sequence(2, frameIndex,:,:));
-                [mean(image(:)) mean(pixelatedImage(:))]
-                drawFrame(image, pixelatedImage, stimParams.blockSize, writerObj);
+                for pixelSizeIndex = 1:numel(stimParams.blockSizeArray)
+                    pixelatedImage(pixelSizeIndex,:,:) = squeeze(sequence(1+pixelSizeIndex, frameIndex,:,:));
+                end
+                [mean(image(:)) mean(squeeze(pixelatedImage(1,:,:))) mean(squeeze(pixelatedImage(2,:,:))) mean(squeeze(pixelatedImage(3,:,:)))]
+                drawFrame(image, pixelatedImage, stimParams.blockSizeArray, writerObj);
             end
         end
     end
     
     
-    % now the inverted polarity
-    for exponentOfOneOverFIndex = 1:numel(stimParams.exponentOfOneOverFArray)
-        for oriBiasIndex = 1:numel(stimParams.oriBiasArray)
-            sequence = stimuli{exponentOfOneOverFIndex, oriBiasIndex}.imageSequence;
-            for frameIndex = 1:size(sequence, 2)
-                image = 255-squeeze(sequence(1, frameIndex,:,:));
-                pixelatedImage = 255-squeeze(sequence(2, frameIndex,:,:));
-                -[mean(image(:)) mean(pixelatedImage(:))]
-                drawFrame(image, pixelatedImage, stimParams.blockSize, writerObj);
-            end
-        end
-    end
+    % now play the inverted polarity
     
      
     % close video writer
@@ -41,49 +32,67 @@ function playSequence
 end
 
 
-function drawFrame(image, pixelatedImage, blockSize, writerObj)
+function drawFrame(image, pixelatedImage, blockSizeArray, writerObj)
 
     h = figure(1);
-    set(h, 'Position', [500 500 790 880]);
+    set(h, 'Position', [500 500 931 554]);
     clf;
     colormap(gray(256));
-    subplot('Position', [0.03 0.52 0.99 0.45]);
+    subplot('Position', [0.03 0.52 0.45 0.45]);
     imagesc(image);
     set(gca, 'CLim', [0 255]);
     hold on;
-    for row = 1:11
-        plot([1 1920], row*blockSize*[1 1], 'k-');
-    end
-    for col = 1:20
-        plot(col*blockSize*[1 1], [1 1080],'k-');
-    end
-    x = 1400-10+2;
-    y = 820-5+1;
-    plot(x,y, 'rs', 'MarkerSize', 30, 'MarkerFaceColor', 'r');
+    xLeft = 1200-10+8;
+    yLeft = 650-5+1;
+    plot(xLeft, yLeft, 'rs', 'MarkerSize', 30, 'MarkerFaceColor', 'r');
+    
+    xRight = 1700-10+8;
+    yRight = 950-5+1;
+    plot(xRight, yRight, 'rs', 'MarkerSize', 30, 'MarkerFaceColor', 'g');
+    
     colorbar
     hold off;
-      
     axis 'image'
     axis 'tight'
     set(gca, 'XTick', []);
       
-    subplot('Position', [0.03 0.04 0.99 0.45]);
-    imagesc(pixelatedImage);
-    set(gca, 'CLim', [0 255]);
-    hold on;
+    for blockSizeIndex = 1:numel(blockSizeArray)
+        if (blockSizeIndex == 1)
+            subplot('Position', [0.52 0.52 0.45 0.45]);
+        elseif (blockSizeIndex == 2)
+            subplot('Position', [0.03 0.04 0.45 0.45]);
+        elseif (blockSizeIndex == 3)
+            subplot('Position', [0.52 0.04 0.45 0.45]);
+        end
+            
+        imagesc(squeeze(pixelatedImage(blockSizeIndex,:,:)));
+        set(gca, 'CLim', [0 255]);
+        hold on;
       
-    for row = 1:11
-          plot([1 1920], row*blockSize*[1 1], 'k-');
-    end
-    for col = 1:20
-          plot(col*blockSize*[1 1], [1 1080],'k-');
-    end
+        rowsNum = 1080/blockSizeArray(blockSizeIndex);
+        colsNum = 1920/blockSizeArray(blockSizeIndex);
+        
+        for row = 1:rowsNum
+              plot([1 1920], row*blockSizeArray(blockSizeIndex)*[1 1], 'k-');
+        end
+        for col = 1:colsNum
+              plot(col*blockSizeArray(blockSizeIndex)*[1 1], [1 1080],'k-');
+        end
 
-    plot(x,y, 'rs', 'MarkerSize', 30, 'MarkerFaceColor', 'r');
-    colorbar
-    hold off;
-    axis 'image'
-    axis 'tight'
+        xLeft = 1200-10+8;
+        yLeft = 650-5+1;
+        plot(xLeft, yLeft, 'rs', 'MarkerSize', 30, 'MarkerFaceColor', 'r');
+
+        xRight = 1700-10+8;
+        yRight = 950-5+1;
+        plot(xRight, yRight, 'rs', 'MarkerSize', 30, 'MarkerFaceColor', 'g');
+    
+        colorbar
+        hold off;
+        axis 'image'
+        axis 'tight'
+    end
+    
     drawnow;
       
     frame = getframe(h);

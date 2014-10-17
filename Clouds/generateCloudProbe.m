@@ -1,15 +1,18 @@
 function generateCloudProbe
     
+    % Load the mean gamma curve function (gammaFunction)
+    load('/Users/Shared/Matlab/Experiments/OLEDExps/PreliminaryData/GammaFunction.mat');
+    
     stimParams.phaseVelocityAtZeroSF           = 0.5;      % phase velocity at zero SF
     stimParams.phaseVelocityFactor             = 0.5;      % velocity of phase at SF_i will be: SF_i ^ phaseVelocityFactor
     stimParams.meanChangeInPhaseAnglePerFrame  = pi/12;    % mean change in phase angle per frame
     stimParams.stdChangeInPhaseAnglePerFrame   = pi/18;
-    stimParams.framesNum                       = 64;
+    stimParams.framesNum                       = 32;
 
     stimParams.deltaOri                 = 45;
     stimParams.exponentOfOneOverFArray  = [1 1.2 1.4];
     stimParams.oriBiasArray             = [2 1];
-    stimParams.blockSize                = 96;
+    stimParams.blockSizeArray           = [48 96 192];
     
     totalFrames = 0;
     for exponentOfOneOverFIndex = 1:numel(stimParams.exponentOfOneOverFArray)
@@ -17,7 +20,9 @@ function generateCloudProbe
             [stimuli{exponentOfOneOverFIndex, oriBiasIndex}.imageSequence, ...
              stimuli{exponentOfOneOverFIndex, oriBiasIndex}.orientationSequence] = ...
                 generateMovingCloudSequence(stimParams, ...
-                stimParams.exponentOfOneOverFArray(exponentOfOneOverFIndex),stimParams.oriBiasArray(oriBiasIndex));
+                stimParams.exponentOfOneOverFArray(exponentOfOneOverFIndex), ...
+                stimParams.oriBiasArray(oriBiasIndex), ...
+                gammaFunction);
             totalFrames = totalFrames + stimParams.framesNum;
         end
     end
@@ -29,7 +34,7 @@ function generateCloudProbe
 end
 
     
-function [imageSequence, orientationSequence] = generateMovingCloudSequence(stimParams, exponentOfOneOverF, oribias)
+function [imageSequence, orientationSequence] = generateMovingCloudSequence(stimParams, exponentOfOneOverF, oribias, gammaFunction)
 %    Create a movie of noise images having 1/f amplitude spectum properties
 %
 %    size       - size of image to produce
@@ -46,14 +51,14 @@ function [imageSequence, orientationSequence] = generateMovingCloudSequence(stim
 %           = 2 or greater  - produces `blobby' images
 
     % unload stimParams
-    factor      = exponentOfOneOverF;
-    lowvel      = stimParams.phaseVelocityAtZeroSF;
-    velfactor   = stimParams.phaseVelocityFactor;
-    meandev     = stimParams.meanChangeInPhaseAnglePerFrame;
-    stddev      = stimParams.stdChangeInPhaseAnglePerFrame;
-    nframes     = stimParams.framesNum;
-    deltaOri    = stimParams.deltaOri;
-    blockSize   = stimParams.blockSize;
+    factor          = exponentOfOneOverF;
+    lowvel          = stimParams.phaseVelocityAtZeroSF;
+    velfactor       = stimParams.phaseVelocityFactor;
+    meandev         = stimParams.meanChangeInPhaseAnglePerFrame;
+    stddev          = stimParams.stdChangeInPhaseAnglePerFrame;
+    nframes         = stimParams.framesNum;
+    deltaOri        = stimParams.deltaOri;
+    blockSizeArray  = stimParams.blockSizeArray;
    
     desiredMatrixSize = [1080 1920];
     filterSize  = 2048;
@@ -108,7 +113,6 @@ function [imageSequence, orientationSequence] = generateMovingCloudSequence(stim
       rowOffset = (size(im,1) - desiredMatrixSize(1))/2;
       im        = im(rowOffset + (1:desiredMatrixSize(1)), colOffset + (1:desiredMatrixSize(2)));
      
-      
       % normalized to 1.0
       im = im / max(abs(im(:)));
       
@@ -133,17 +137,19 @@ function [imageSequence, orientationSequence] = generateMovingCloudSequence(stim
       % normalize to [0 .. 1];
       im = (im + 1)/2;
       
-      % make pixelated version
-      pixelatedIm = pixelateImage(im, blockSize);
-      
-      pixelatedIm = uint8(255*pixelatedIm);
-      originalIm  = uint8(255*im);
-      
-      [mean(originalIm(:)) mean(pixelatedIm(:))]
-      
       % store sequence
+      originalIm  = uint8(255*im);
       imageSequence(1, frameIndex,:,:) = originalIm;
-      imageSequence(2, frameIndex,:,:) = pixelatedIm;
+      
+      % make pixelated versions
+      for blockSizeIndex = 1:numel(blockSizeArray)
+          blockSize = blockSizeArray(blockSizeIndex);
+            pixelatedIm = pixelateImage(im, blockSize);
+            pixelatedIm = uint8(255*pixelatedIm);
+            [mean(originalIm(:)) mean(pixelatedIm(:))]
+            imageSequence(1+blockSizeIndex, frameIndex,:,:) = pixelatedIm;
+      end
+      
     end % frameIndex
 end
 
